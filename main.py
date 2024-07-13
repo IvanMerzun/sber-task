@@ -7,29 +7,49 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 
 import time
+from datetime import datetime, timedelta
 from get_link_on_case import scrap_inf
-from common import PLAINTIFFS, DEFENDANTS, THIRDS, OTHERS, INN, DATE, NUMBERS_CASE, ESSENCE_OF_CASE, COURTS
+from common import (
+    PLAINTIFFS,
+    DEFENDANTS,
+    THIRDS,
+    OTHERS,
+    INN,
+    DATE,
+    NUMBERS_CASE,
+    ESSENCE_OF_CASE,
+    COURTS,
+)
 from load_data_to_exel import load_data_to_excel
 
-fn = 'sber.xlsx'
+fn = "sber.xlsx"
 wb = load_workbook(fn)
-ws = wb['data']
+ws = wb["data"]
 
-#очистка листа
+# очистка листа
 for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=ws.max_column):
     for cell in row:
         cell.value = None
 
-headers = ['Номер дела', 'Дата', 'Суд', 'Истец/ИНН', 'Ответчик/ИНН', 'Третьи лица', 'Иные лица', 'Суть дела']
+headers = [
+    "Номер дела",
+    "Дата",
+    "Суд",
+    "Истец/ИНН",
+    "Ответчик/ИНН",
+    "Третьи лица",
+    "Иные лица",
+    "Суть дела",
+]
 for col_num, header in enumerate(headers, 1):
     cell = ws.cell(row=1, column=col_num, value=header)
     cell.font = Font(bold=True, size=10)  # Делает текст жирным
-    cell.alignment = Alignment(horizontal='center', vertical='center')
+    cell.alignment = Alignment(horizontal="center", vertical="center")
     cell.border = Border(
-    left=Side(style='thick'),
-    right=Side(style='thick'),
-    top=Side(style='thick'),
-    bottom=Side(style='thick')
+        left=Side(style="thick"),
+        right=Side(style="thick"),
+        top=Side(style="thick"),
+        bottom=Side(style="thick"),
     )
 
 wb.save(fn)
@@ -38,11 +58,9 @@ wb.close()
 useragent = UserAgent()
 options = webdriver.ChromeOptions()
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option('useAutomationExtension', False)
+options.add_experimental_option("useAutomationExtension", False)
 options.add_argument("--disable-blink-features=AutomationControlled")
-options.add_argument('--disable-blink-features=AutomationControlled')
-
-
+options.add_argument("--disable-blink-features=AutomationControlled")
 
 
 driver = webdriver.Chrome(options=options)
@@ -52,43 +70,73 @@ driver.maximize_window()
 driver.get(URL)
 time.sleep(5)
 
-data_first = "01.06.2024"
-data_second = "30.06.2024"
+# Начальная дата
+start_date = datetime.strptime("01.06.2024", "%d.%m.%Y")
+end_date = datetime.strptime("30.06.2024", "%d.%m.%Y")
 
-data_input = driver.find_elements(By.CSS_SELECTOR, 'input[class="anyway_position_top g-ph"]')
-data_first_input = data_input[0]
-data_second_input = data_input[1]
-data_first_input.click()
-time.sleep(3)
-data_first_input.send_keys(data_first)
-time.sleep(5)
+current_date = start_date
 
-data_second_input.click()
-time.sleep(3)
-data_second_input.send_keys(data_second)
-time.sleep(3)
-data_second_input.send_keys(Keys.RETURN)
-time.sleep(5)
+while current_date < end_date:
+    data_first = current_date.strftime("%d.%m.%Y")
+    data_second = (current_date + timedelta(days=1)).strftime("%d.%m.%Y")
+    # Ввод данных на страницу
+    data_input = driver.find_elements(
+        By.CSS_SELECTOR, 'input[class="anyway_position_top g-ph"]'
+    )
+    data_first_input = data_input[0]
+    data_second_input = data_input[1]
 
-while True:
-    try:
-        page_source = driver.page_source
-        soup = BeautifulSoup(page_source, 'lxml')
+    data_first_input.click()
+    time.sleep(3)
+    data_first_input.clear()
+    time.sleep(1)
+    data_first_input.click()
+    time.sleep(1)
+    data_first_input.send_keys(data_first)
+    time.sleep(1)
 
-        scrap_inf(soup)
+    data_second_input.click()
+    time.sleep(1)
+    data_second_input.clear()
+    time.sleep(1)
+    data_second_input.click()
+    time.sleep(1)
+    data_second_input.send_keys(data_second)
+    time.sleep(3)
+    data_second_input.send_keys(Keys.RETURN)
+    time.sleep(5)
 
-        load_data_to_excel(PLAINTIFFS, DEFENDANTS, THIRDS, OTHERS, INN, DATE, NUMBERS_CASE, ESSENCE_OF_CASE, COURTS,'sber.xlsx')
+    while True:
+        try:
+            page_source = driver.page_source
+            soup = BeautifulSoup(page_source, "lxml")
 
+            scrap_inf(soup)
 
-        time.sleep(6)
+            load_data_to_excel(
+                PLAINTIFFS,
+                DEFENDANTS,
+                THIRDS,
+                OTHERS,
+                INN,
+                DATE,
+                NUMBERS_CASE,
+                ESSENCE_OF_CASE,
+                COURTS,
+                r"C:\Users\User\Desktop\Projects\pythonProject1\sber.xlsx",
+            )
 
-        next_button = driver.find_element(By.CSS_SELECTOR, 'li[class="rarr"]')
-        next_button.click()
+            time.sleep(6)
 
-        time.sleep(6)
-    except:
-        print("Следующая страница недоступна.")
-        break
+            next_button = driver.find_element(By.CSS_SELECTOR, 'li[class="rarr"]')
+            next_button.click()
+
+            time.sleep(6)
+        except:
+            print("Следующая страница недоступна, переходим к следующей.")
+            break
+
+    current_date += timedelta(days=2)
 
 driver.quit()
 
