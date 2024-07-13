@@ -2,7 +2,6 @@ from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment, Border, Side
 
-
 def load_data_to_excel(
     plaintiffs,
     defendants,
@@ -27,7 +26,7 @@ def load_data_to_excel(
             row=next_row + row_index, column=1, value=numbers_case[row_index]
         ).font = Font(size=10)
         ws.cell(row=next_row + row_index, column=1).alignment = Alignment(
-            horizontal="center", vertical="center"
+            horizontal="center", vertical="top", wrap_text=True
         )
         ws.cell(row=next_row + row_index, column=1).border = Border(
             left=Side(style="thin"),
@@ -41,7 +40,7 @@ def load_data_to_excel(
             size=10
         )
         ws.cell(row=next_row + row_index, column=2).alignment = Alignment(
-            horizontal="center", vertical="center"
+            horizontal="center", vertical="top", wrap_text=True
         )
         ws.cell(row=next_row + row_index, column=2).border = Border(
             left=Side(style="thin"),
@@ -55,7 +54,7 @@ def load_data_to_excel(
             row=next_row + row_index, column=3, value=courts[row_index]
         ).font = Font(size=10)
         ws.cell(row=next_row + row_index, column=3).alignment = Alignment(
-            horizontal="center", vertical="center"
+            horizontal="center", vertical="top", wrap_text=True
         )
         ws.cell(row=next_row + row_index, column=3).border = Border(
             left=Side(style="thin"),
@@ -71,7 +70,7 @@ def load_data_to_excel(
             value=f"{plaintiffs[row_index]} / {inns[row_index][0]}",
         ).font = Font(size=10)
         ws.cell(row=next_row + row_index, column=4).alignment = Alignment(
-            horizontal="center", vertical="center"
+            horizontal="center", vertical="top", wrap_text=True
         )
         ws.cell(row=next_row + row_index, column=4).border = Border(
             left=Side(style="thin"),
@@ -87,7 +86,7 @@ def load_data_to_excel(
             value=f"{defendants[row_index]} / {inns[row_index][1]}",
         ).font = Font(size=10)
         ws.cell(row=next_row + row_index, column=5).alignment = Alignment(
-            horizontal="center", vertical="center"
+            horizontal="center", vertical="top", wrap_text=True
         )
         ws.cell(row=next_row + row_index, column=5).border = Border(
             left=Side(style="thin"),
@@ -102,7 +101,7 @@ def load_data_to_excel(
                 row=next_row + row_index, column=6, value=", ".join(thirds[row_index])
             ).font = Font(size=10)
             ws.cell(row=next_row + row_index, column=6).alignment = Alignment(
-                horizontal="center", vertical="center"
+                horizontal="center", vertical="top", wrap_text=True
             )
             ws.cell(row=next_row + row_index, column=6).border = Border(
                 left=Side(style="thin"),
@@ -113,7 +112,7 @@ def load_data_to_excel(
         else:
             ws.cell(row=next_row + row_index, column=6, value="-").font = Font(size=10)
             ws.cell(row=next_row + row_index, column=6).alignment = Alignment(
-                horizontal="center", vertical="center"
+                horizontal="center", vertical="top", wrap_text=True
             )
             ws.cell(row=next_row + row_index, column=6).border = Border(
                 left=Side(style="thin"),
@@ -128,7 +127,7 @@ def load_data_to_excel(
                 row=next_row + row_index, column=7, value=", ".join(others[row_index])
             ).font = Font(size=10)
             ws.cell(row=next_row + row_index, column=7).alignment = Alignment(
-                horizontal="center", vertical="center"
+                horizontal="center", vertical="top", wrap_text=True
             )
             ws.cell(row=next_row + row_index, column=7).border = Border(
                 left=Side(style="thin"),
@@ -139,7 +138,7 @@ def load_data_to_excel(
         else:
             ws.cell(row=next_row + row_index, column=7, value="-").font = Font(size=10)
             ws.cell(row=next_row + row_index, column=7).alignment = Alignment(
-                horizontal="center", vertical="center"
+                horizontal="center", vertical="top", wrap_text=True
             )
             ws.cell(row=next_row + row_index, column=7).border = Border(
                 left=Side(style="thin"),
@@ -153,9 +152,10 @@ def load_data_to_excel(
             ws.cell(
                 row=next_row + row_index,
                 column=8,
-                value=essence_of_case[row_index]).font = Font(size=10)
+                value=essence_of_case[row_index]
+            ).font = Font(size=10)
             ws.cell(row=next_row + row_index, column=8).alignment = Alignment(
-                horizontal="center", vertical="center"
+                horizontal="center", vertical="top", wrap_text=True
             )
             ws.cell(row=next_row + row_index, column=8).border = Border(
                 left=Side(style="thin"),
@@ -166,7 +166,7 @@ def load_data_to_excel(
         else:
             ws.cell(row=next_row + row_index, column=8, value="-").font = Font(size=10)
             ws.cell(row=next_row + row_index, column=8).alignment = Alignment(
-                horizontal="center", vertical="center"
+                horizontal="center", vertical="top", wrap_text=True
             )
             ws.cell(row=next_row + row_index, column=8).border = Border(
                 left=Side(style="thin"),
@@ -174,6 +174,19 @@ def load_data_to_excel(
                 top=Side(style="thin"),
                 bottom=Side(style="thin"),
             )
+
+    # Настройка высоты строк
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=ws.max_column):
+        ws.row_dimensions[row[0].row].height = 50
+
+    # Настройка ширины столбцов
+    for col_num, header in enumerate(ws[1], 1):
+        if header.value == "Дата":
+            ws.column_dimensions[get_column_letter(col_num)].width = (len(header.value) + 2) * 2
+        elif header.value == "Суд":
+            ws.column_dimensions[get_column_letter(col_num)].width = (len(header.value) + 2) * 4
+        else:
+            ws.column_dimensions[get_column_letter(col_num)].width = (len(header.value) + 2) * 2.5
 
     plaintiffs.clear()
     defendants.clear()
