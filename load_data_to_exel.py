@@ -153,8 +153,7 @@ def load_data_to_excel(
             ws.cell(
                 row=next_row + row_index,
                 column=8,
-                value=", ".join(essence_of_case[row_index]),
-            ).font = Font(size=10)
+                value=essence_of_case[row_index]).font = Font(size=10)
             ws.cell(row=next_row + row_index, column=8).alignment = Alignment(
                 horizontal="center", vertical="center"
             )

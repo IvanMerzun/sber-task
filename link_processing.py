@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from selenium.webdriver.common.by import By
 from essence_of_case import essence_of_case

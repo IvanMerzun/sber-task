@@ -1,9 +1,9 @@
+import openpyxl
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
-from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 
 import time
@@ -22,9 +22,12 @@ from common import (
 )
 from load_data_to_exel import load_data_to_excel
 
-fn = "sber.xlsx"
-wb = load_workbook(fn)
-ws = wb["data"]
+wb = openpyxl.Workbook()
+ws = wb.create_sheet(title="data")
+default_sheet = wb["Sheet"]
+wb.remove(default_sheet)
+
+
 
 # очистка листа
 for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=ws.max_column):
@@ -52,7 +55,7 @@ for col_num, header in enumerate(headers, 1):
         bottom=Side(style="thick"),
     )
 
-wb.save(fn)
+wb.save("sber.xlsx")
 wb.close()
 
 useragent = UserAgent()
@@ -123,10 +126,10 @@ while current_date < end_date:
                 NUMBERS_CASE,
                 ESSENCE_OF_CASE,
                 COURTS,
-                r"C:\Users\User\Desktop\Projects\pythonProject1\sber.xlsx",
+                "sber.xlsx"
             )
 
-            time.sleep(6)
+            time.sleep(8)
 
             next_button = driver.find_element(By.CSS_SELECTOR, 'li[class="rarr"]')
             next_button.click()
