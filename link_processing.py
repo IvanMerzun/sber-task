@@ -21,12 +21,7 @@ def link_processing(links):
         driver.maximize_window()
         driver.get(link)
         time.sleep(5)
-        driver.find_element(
-            By.CSS_SELECTOR,
-            'div[title="Нажмите, чтобы ознакомиться с полной хронологией дела."]',
-        ).click()
 
-        time.sleep(5)
         Page_source = driver.page_source
         soup = BeautifulSoup(Page_source, "lxml")
         # истец
