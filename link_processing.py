@@ -1,37 +1,38 @@
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
-from selenium.webdriver.common.by import By
 from essence_of_case import essence_of_case
+from common import IS_PROXIES
 
 from selenium import webdriver
 import time
 from common import PLAINTIFFS, DEFENDANTS, THIRDS, OTHERS
 
-
-def link_processing(links):
-    useragent = UserAgent()
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    driver = webdriver.Chrome(options=options)
+def link_processing(links, session):
     for link in links:
-        # Разворачиваем окно браузера на весь экран
-        driver.maximize_window()
-        driver.get(link)
-        time.sleep(5)
-
-        Page_source = driver.page_source
-        soup = BeautifulSoup(Page_source, "lxml")
+        time.sleep(3)
+        response = session.get(url=link)
+        time.sleep(3)
+        soup = BeautifulSoup(response.text, "lxml")
+        print(soup)
         # истец
-        plaintiff = (
-            soup.find("td", class_="plaintiffs first").find("a").text.rstrip().lstrip()
-        )
-        PLAINTIFFS.append(plaintiff)
+        plaintiff = soup.find_all("td", class_="plaintiffs")[1]
+        if plaintiff != None:
+            new_plaintiff = plaintiff.find("a")
+            if new_plaintiff != None:
+                PLAINTIFFS.append(plaintiff.text.rstrip().lstrip())
+            else:
+                PLAINTIFFS.append(f"-")
+        else:
+            PLAINTIFFS.append(f"-")
         # ответчик
-        defendant = soup.find_all("td", class_="defendants")[1].find("a")
-        DEFENDANTS.append(defendant.text.rstrip().lstrip())
+        defendant = soup.find_all("td", class_="defendants")[1]
+        if defendant != None:
+            new_defendant = defendant.find("a")
+            if new_defendant != None:
+                DEFENDANTS.append(defendant.text.rstrip().lstrip())
+            else:
+                DEFENDANTS.append(f"-")
+        else:
+            DEFENDANTS.append(f"-")
         # третьи лица
         third = soup.find_all("td", class_="third")[1].find_all("a")
         thirds = []
@@ -56,4 +57,3 @@ def link_processing(links):
         OTHERS.append(others)
 
         essence_of_case(soup)
-    driver.quit()
